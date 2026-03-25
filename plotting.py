@@ -44,7 +44,7 @@ def plot_compare(t, signals, labels, title="Comparison", ax=None) -> None:
         plt.show()
 
 
-def plot_grid(items, nrows=2, ncols=2, figsize=(12, 8)) -> None:
+def plot_grid(items, nrows=2, ncols=2, figsize=(12, 10)) -> None:
     """
     Simple grid plot for time series or custom Axes callables.
 
