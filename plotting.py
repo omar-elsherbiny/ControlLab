@@ -15,68 +15,69 @@ def plot_time(t, y, title="Response", ax=None) -> None:
     ax.grid()
 
 
-def plot_grid(items, titles=None, nrows=2, ncols=2, figsize=(12, 8)):
+def plot_compare(t, signals, labels, title="Comparison", ax=None) -> None:
     """
-    Plots multiple items in a grid.
-
-    Each item can be:
-    - A tuple (t, y) -> time-domain plot
-    - A callable f(ax) -> custom plotting function
+    Plots multiple signals on the same axes.
 
     Parameters:
-    - items: list of items to plot (tuples or callables)
-    - titles: optional list of subplot titles (ignored if callable sets its own)
+    - t: time vector
+    - signals: list of y arrays
+    - labels: list of labels for each signal
+    - title: plot title
+    - ax: optional matplotlib Axes object
+    """
+    if ax is None:
+        plt.figure()
+        ax = plt.gca()
+
+    for y, label in zip(signals, labels):
+        ax.plot(t, y, label=label)
+
+    ax.set_title(title)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Amplitude")
+    ax.legend()
+    ax.grid()
+
+    # Only show if figure was created here
+    if ax is plt.gca():
+        plt.show()
+
+
+def plot_grid(items, nrows=2, ncols=2, figsize=(12, 8)) -> None:
+    """
+    Simple grid plot for time series or custom Axes callables.
+
+    Parameters:
+    - items: list of (t, y) tuples or callables(ax)
     - nrows, ncols: grid layout
     - figsize: figure size
     """
-    n_plots = len(items)
-    if titles is None:
-        titles = [f"Plot {i+1}" for i in range(n_plots)]
-
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
-
-    # Flatten axes to a 1D array
-    if isinstance(axes, np.ndarray):
-        axes_list = axes.ravel()
-    else:
-        axes_list = [axes]
+    axes = np.array(axes).flatten()
 
     for i, item in enumerate(items):
-        ax = axes_list[i]
+        ax = axes[i]
         if callable(item):
-            # Custom plotting function that accepts ax
             item(ax)
         else:
-            # Assume (t, y) tuple
-            t, y = item
+            t, y, *title = item
             ax.plot(t, y)
-            ax.set_title(titles[i])
+            ax.set_title(title[0] if title else "")
             ax.set_xlabel("Time")
             ax.set_ylabel("Amplitude")
             ax.grid()
 
-    # Hide unused axes
-    for ax in axes_list[n_plots:]:
+    for ax in axes[len(items):]:
         ax.set_visible(False)
 
     plt.tight_layout()
     plt.show()
 
 
-def plot_compare(t, signals, labels, title="Comparison"):
-    plt.figure()
-    for y, label in zip(signals, labels):
-        plt.plot(t, y, label=label)
-
-    plt.title(title)
-    plt.xlabel("Time")
-    plt.ylabel("Amplitude")
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
-def plot_pzmap(sys, title="Pole-Zero Map", ax=None):
+def plot_pzmap(
+    sys, title="Pole-Zero Map", ax=None, xlim=(-10, 1), ylim=(-10, 10)
+) -> None:
     """
     Plots the poles and zeros of a system.
 
@@ -84,6 +85,8 @@ def plot_pzmap(sys, title="Pole-Zero Map", ax=None):
     - sys: control system
     - title: subplot title
     - ax: optional matplotlib Axes object
+    - xlim: tuple (xmin, xmax) to zoom x-axis
+    - ylim: tuple (ymin, ymax) to zoom y-axis
     """
     if ax is None:
         fig, ax = plt.subplots()
@@ -110,6 +113,11 @@ def plot_pzmap(sys, title="Pole-Zero Map", ax=None):
     ax.set_title(title)
     ax.legend()
     ax.grid(True)
+
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
 
     if ax is None:
         plt.show()
